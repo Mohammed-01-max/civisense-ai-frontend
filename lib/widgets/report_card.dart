@@ -11,6 +11,83 @@ class ReportCard extends StatelessWidget {
 
   const ReportCard({super.key, required this.report, this.onTap});
 
+  void _openImageViewer(BuildContext context) {
+    if (report.imageUrl == null || report.imageUrl!.isEmpty) {
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          backgroundColor: AppTheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Image Preview',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
+                child: InteractiveViewer(
+                  boundaryMargin: const EdgeInsets.all(20),
+                  child: Image.network(
+                    report.imageUrl!,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(color: AppTheme.primary),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      color: AppTheme.surface,
+                      child: const Center(
+                        child: Icon(Icons.broken_image_rounded, color: AppTheme.textMuted, size: 48),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -24,7 +101,7 @@ class ReportCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (report.imageUrl != null && report.imageUrl!.isNotEmpty)
+              if (report.imageUrl != null && report.imageUrl!.isNotEmpty) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(18),
                   child: Image.network(
@@ -53,8 +130,20 @@ class ReportCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (report.imageUrl != null && report.imageUrl!.isNotEmpty)
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openImageViewer(context),
+                        icon: const Icon(Icons.open_in_full_rounded),
+                        label: const Text('View Image'),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
+              ],
 
               // Header row: Issue number + Status
               Row(
