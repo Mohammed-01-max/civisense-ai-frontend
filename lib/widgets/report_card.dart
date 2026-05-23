@@ -24,6 +24,38 @@ class ReportCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (report.imageUrl != null && report.imageUrl!.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.network(
+                    report.imageUrl!,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 160,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Center(child: Icon(Icons.broken_image_rounded, color: AppTheme.textMuted, size: 40)),
+                    ),
+                  ),
+                ),
+              if (report.imageUrl != null && report.imageUrl!.isNotEmpty)
+                const SizedBox(height: 16),
+
               // Header row: Issue number + Status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

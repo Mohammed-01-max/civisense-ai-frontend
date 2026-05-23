@@ -21,6 +21,7 @@ class Report {
   final double latitude;
   final double longitude;
   final String? areaZone;
+  final String? imageUrl;
   final String? description;
   final String status;
   final DateTime? resolvedAt;
@@ -33,6 +34,7 @@ class Report {
     required this.latitude,
     required this.longitude,
     this.areaZone,
+    this.imageUrl,
     this.description,
     required this.status,
     this.resolvedAt,
@@ -49,6 +51,7 @@ class Report {
       areaZone: json['area_zone'],
       description: json['description'],
       status: json['status'],
+      imageUrl: json['image_url'],
       resolvedAt: json['resolved_at'] != null
           ? DateTime.parse(json['resolved_at'])
           : null,

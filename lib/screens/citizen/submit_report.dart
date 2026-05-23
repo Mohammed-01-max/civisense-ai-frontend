@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/report.dart';
 import '../../services/report_service.dart';
+import '../../services/location_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/gradient_button.dart';
 import '../../widgets/custom_text_field.dart';
@@ -54,12 +55,27 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
   }
 
   Future<void> _getLocation() async {
-    // Default Hyderabad coordinates for demo
-    setState(() {
-      _latController.text = '17.4400';
-      _lonController.text = '78.3489';
-    });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Using default Hyderabad coordinates'), backgroundColor: AppTheme.info));
+    try {
+      final position = await LocationService.getCurrentLocation();
+      if (position != null) {
+        setState(() {
+          _latController.text = position.latitude.toStringAsFixed(6);
+          _lonController.text = position.longitude.toStringAsFixed(6);
+          _result = null;
+          _error = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location updated from device GPS'),
+            backgroundColor: AppTheme.resolved,
+          ),
+        );
+      } else {
+        setState(() => _error = 'Location services unavailable or permission denied');
+      }
+    } catch (e) {
+      setState(() => _error = 'Failed to get location: $e');
+    }
   }
 
   Future<void> _submit() async {
