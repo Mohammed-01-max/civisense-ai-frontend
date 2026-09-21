@@ -14,6 +14,7 @@ import 'screens/admin/all_reports.dart';
 import 'screens/admin/analytics_screen.dart';
 import 'screens/authority/authority_home.dart';
 import 'screens/authority/resolve_screen.dart';
+import 'screens/officer/officer_home.dart';
 
 void main() {
   runApp(const CivicSafeApp());
@@ -44,6 +45,7 @@ class CivicSafeApp extends StatelessWidget {
           '/admin/analytics': (ctx) => const AnalyticsScreen(),
           '/authority': (ctx) => const AuthorityHome(),
           '/authority/resolve': (ctx) => const ResolveScreen(),
+          '/officer': (ctx) => const OfficerHome(),
         },
       ),
     );

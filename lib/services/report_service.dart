@@ -66,4 +66,13 @@ class ReportService {
       throw Exception('Failed to fetch reports');
     }
   }
+
+  Future<List<Report>> getAssignedOfficerReports() async {
+    final response = await _api.get(ApiConfig.officerReports);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
+      return data.map((r) => Report.fromJson(r)).toList();
+    }
+    throw Exception('Failed to fetch assigned reports');
+  }
 }

@@ -24,6 +24,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>CivicSafe uses the camera to attach evidence to a civic report.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>CivicSafe uses your photo library to attach evidence to a civic report.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>CivicSafe uses your location to place a civic report accurately.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

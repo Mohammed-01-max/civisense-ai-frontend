@@ -51,8 +51,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> register({
     required String email,
     required String password,
+    required String jurisdiction,
     String? fullName,
-    String role = 'citizen',
   }) async {
     _isLoading = true;
     _error = null;
@@ -62,8 +62,8 @@ class AuthProvider extends ChangeNotifier {
       await _authService.register(
         email: email,
         password: password,
+        jurisdiction: jurisdiction,
         fullName: fullName,
-        role: role,
       );
       // Auto-login after registration
       await _authService.login(email: email, password: password);

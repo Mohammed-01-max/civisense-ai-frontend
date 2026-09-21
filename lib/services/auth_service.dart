@@ -34,14 +34,14 @@ class AuthService {
   Future<User> register({
     required String email,
     required String password,
+    required String jurisdiction,
     String? fullName,
-    String role = 'citizen',
   }) async {
     final response = await _api.post(ApiConfig.register, body: {
       'email': email,
       'password': password,
+      'jurisdiction': jurisdiction,
       if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
-      'role': role,
     });
 
     if (response.statusCode == 201) {

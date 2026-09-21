@@ -19,37 +19,13 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _fullNameController = TextEditingController();
-  String _selectedRole = 'citizen';
+  String _jurisdiction = 'GHMC';
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-
-  final List<Map<String, dynamic>> _roles = [
-    {
-      'value': 'citizen',
-      'label': 'Citizen',
-      'icon': Icons.person_rounded,
-      'desc': 'Report civic issues',
-      'color': AppTheme.primary,
-    },
-    {
-      'value': 'admin',
-      'label': 'Admin',
-      'icon': Icons.admin_panel_settings_rounded,
-      'desc': 'Manage & analyze reports',
-      'color': AppTheme.accent,
-    },
-    {
-      'value': 'authority',
-      'label': 'Authority',
-      'icon': Icons.verified_user_rounded,
-      'desc': 'Resolve issues',
-      'color': AppTheme.warning,
-    },
-  ];
 
   @override
   void initState() {
@@ -85,8 +61,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     await auth.register(
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      jurisdiction: _jurisdiction,
       fullName: _fullNameController.text.trim(),
-      role: _selectedRole,
     );
 
     if (!mounted) return;
@@ -111,6 +87,9 @@ class _RegisterScreenState extends State<RegisterScreen>
         break;
       case 'authority':
         Navigator.pushReplacementNamed(context, '/authority');
+        break;
+      case 'officer':
+        Navigator.pushReplacementNamed(context, '/officer');
         break;
       default:
         Navigator.pushReplacementNamed(context, '/citizen');
@@ -152,60 +131,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                       const SizedBox(height: 32),
 
-                      // Role selector
-                      Row(
-                        children: _roles.map((role) {
-                          final isSelected = _selectedRole == role['value'];
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() => _selectedRole = role['value']);
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? (role['color'] as Color).withValues(alpha: 0.15)
-                                      : AppTheme.surface.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? (role['color'] as Color).withValues(alpha: 0.5)
-                                        : Colors.white.withValues(alpha: 0.08),
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      role['icon'],
-                                      color: isSelected
-                                          ? role['color']
-                                          : AppTheme.textMuted,
-                                      size: 28,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      role['label'],
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? role['color']
-                                            : AppTheme.textSecondary,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
                       // Form
                       Container(
                         padding: const EdgeInsets.all(28),
@@ -219,6 +144,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 label: 'Full Name',
                                 hint: 'Enter your name',
                                 prefixIcon: Icons.person_outline,
+                              ),
+                              const SizedBox(height: 18),
+                              DropdownButtonFormField<String>(
+                                value: _jurisdiction,
+                                decoration: const InputDecoration(
+                                  labelText: 'Jurisdiction',
+                                  prefixIcon: Icon(Icons.location_city_outlined),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'GHMC', child: Text('GHMC')),
+                                  DropdownMenuItem(value: 'Cyberabad Municipal Corporation', child: Text('Cyberabad Municipal Corporation')),
+                                  DropdownMenuItem(value: 'Malkajgiri Municipal Corporation', child: Text('Malkajgiri Municipal Corporation')),
+                                ],
+                                onChanged: (value) {
+                                  if (value != null) setState(() => _jurisdiction = value);
+                                },
                               ),
                               const SizedBox(height: 18),
                               CustomTextField(

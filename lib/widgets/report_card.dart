@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/report.dart';
+import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'status_badge.dart';
 import 'issue_chip.dart';
@@ -10,6 +12,11 @@ class ReportCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ReportCard({super.key, required this.report, this.onTap});
+
+  Map<String, String>? _imageHeaders(BuildContext context) {
+    final token = context.read<AuthProvider>().apiService.token;
+    return token == null ? null : {'Authorization': 'Bearer $token'};
+  }
 
   void _openImageViewer(BuildContext context) {
     if (report.imageUrl == null || report.imageUrl!.isEmpty) {
@@ -55,6 +62,7 @@ class ReportCard extends StatelessWidget {
                   boundaryMargin: const EdgeInsets.all(20),
                   child: Image.network(
                     report.imageUrl!,
+                    headers: _imageHeaders(context),
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -106,6 +114,7 @@ class ReportCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                   child: Image.network(
                     report.imageUrl!,
+                    headers: _imageHeaders(context),
                     height: 160,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -219,6 +228,33 @@ class ReportCard extends StatelessWidget {
                     ],
                   ),
                 ),
+
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      report.assignmentStatus == 'assigned'
+                          ? Icons.person_rounded
+                          : Icons.person_outline_rounded,
+                      color: AppTheme.info,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        report.assignedOfficer?.name != null
+                            ? 'Assigned to ${report.assignedOfficer!.name}'
+                            : 'Assignment: ${report.assignmentStatus}',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               // Description
               if (report.description != null && report.description!.isNotEmpty)

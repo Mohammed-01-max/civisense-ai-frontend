@@ -1,50 +1,89 @@
-# CivicSafe Flutter Frontend
+# CiviSense AI — Frontend
 
-CivicSafe is a comprehensive smart civic issue detection platform. This frontend is built with Flutter and connects to the FastAPI backend. It features role-based dashboards (Citizen, Admin, Authority), image-based reporting with GPS coordinates, and analytics.
+> **Flutter mobile and web client for the CiviSense AI platform.**
 
-## Prerequisites
+This repository contains the frontend application for CiviSense AI, built with Flutter. It provides role-based interfaces for citizens, municipal officers, authority figures, and system administrators.
 
-To run this application, you need to have Flutter installed on your system.
+---
 
-1. **Install Flutter SDK:**
-   Follow the official instructions for Windows here: [Install Flutter on Windows](https://docs.flutter.dev/get-started/install/windows)
+## Features
 
-2. **Verify Installation:**
-   Run `flutter doctor` in your terminal to ensure all necessary tools (like Chrome for web testing) are installed and configured.
+### Role-Based Access
 
-## Setup Instructions
+The application supports four distinct user roles, each with a tailored experience:
 
-1. **Navigate to the frontend directory:**
-   ```bash
-   cd frontend
-   ```
+1. **Citizen**
+   - Public registration (gated to supported jurisdictions: GHMC, Cyberabad Municipal Corporation, Malkajgiri Municipal Corporation).
+   - Secure login.
+   - Submit new civic complaints with multimodal data: image capture, GPS coordinates, and text description.
+   - View personal complaint history and status.
 
-2. **Install Dependencies:**
+2. **Officer**
+   - Login (accounts provisioned by admins only).
+   - View assigned pending reports. Assignments are deterministic, based on active status, matching jurisdiction and department, and lowest pending workload (with stable user ID tie-breaking).
+
+3. **Authority**
+   - Login.
+   - Review and mark reports as resolved using the unique issue number.
+
+4. **Admin**
+   - Login.
+   - View all system reports with optional status filtering.
+   - Access high-level analytics and aggregated data.
+   - Provision new officer accounts.
+
+### Key Capabilities
+
+- **Secure API Communication:** Bearer token authentication via JWT (stored locally).
+- **Multipart Uploads:** Sends image bytes, coordinates, and text descriptions seamlessly to the backend AI pipeline.
+- **Image Viewing:** Secure, authenticated image retrieval for authorised roles.
+
+---
+
+## Technology Stack
+
+- **Framework:** Flutter / Dart (SDK ^3.11.1)
+- **State Management:** `provider`
+- **HTTP Client:** `http`
+- **Local Storage:** `shared_preferences`
+- **Hardware Integration:** `image_picker` (camera/gallery), `geolocator` (GPS)
+- **UI/UX:** `google_fonts`, `cupertino_icons`, custom glass-morphism theme
+
+---
+
+## Local Setup
+
+### Prerequisites
+
+- Flutter SDK (≥ 3.11.1)
+- Dart SDK
+- A running instance of the CiviSense AI backend
+
+### Running the App
+
+1. **Install dependencies:**
    ```bash
    flutter pub get
    ```
 
-3. **Start the Backend:**
-   Ensure your FastAPI backend is running before launching the frontend. In a separate terminal, navigate to the `backend` directory and run:
+2. **Configure and Run:**
+   The API base URL is injected at build time. It must be provided via `--dart-define`.
+
+   *Running on a local emulator/web (pointing to localhost backend):*
    ```bash
-   uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000
    ```
 
-4. **Run the Flutter App (Web/Chrome):**
+   *Running on a physical device (pointing to your host machine's IP):*
    ```bash
-   flutter run -d chrome --web-port 8080
+   flutter run --dart-define=API_BASE_URL=http://<YOUR_HOST_IP>:8000
    ```
 
-5. **Access the Application:**
-   Once the build completes, Chrome will automatically open. If not, manually navigate to `http://localhost:8080` in your web browser.
+---
 
-## Generating an APK (Android)
+## Limitations
 
-To build a release APK that you can install on Android devices:
-
-```bash
-flutter build apk --release
-```
-
-Once the build process finishes, you can find the generated APK file at:
-`build/app/outputs/flutter-apk/app-release.apk`
+- Push notifications are not currently implemented.
+- Offline mode and local caching of reports are not supported.
+- The UI is optimised for mobile form factors; web/desktop layouts are functional but not fully responsive.
+- Real Flutter runtime validation has not been performed in this automated environment.
