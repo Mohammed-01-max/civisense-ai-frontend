@@ -11,6 +11,7 @@ import '../../widgets/gradient_button.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/issue_chip.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/ai_assessment_card.dart';
 
 class SubmitReportScreen extends StatefulWidget {
   const SubmitReportScreen({super.key});
@@ -212,6 +213,8 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
           Wrap(spacing: 8, runSpacing: 8, children: r.detections.map((d) => IssueChip(issueType: d.issueType)).toList()),
         ]),
       ),
+      const SizedBox(height: 24),
+      AiAssessmentCard(report: r),
       const SizedBox(height: 24),
       GradientButton(text: 'Submit Another', icon: Icons.add_rounded, onPressed: () => setState(() { _result = null; _imageBytes = null; _imageName = null; _descController.clear(); })),
       const SizedBox(height: 12),

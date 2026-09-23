@@ -5,6 +5,7 @@ import '../../models/report.dart';
 import '../../services/report_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/report_card.dart';
+import 'report_detail_screen.dart';
 
 class MyReportsScreen extends StatefulWidget {
   const MyReportsScreen({super.key});
@@ -65,7 +66,17 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                         child: ListView.builder(
                           padding: const EdgeInsets.all(20),
                           itemCount: _reports!.length,
-                          itemBuilder: (ctx, i) => ReportCard(report: _reports![i]),
+                          itemBuilder: (ctx, i) => ReportCard(
+                            report: _reports![i],
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ReportDetailScreen(
+                                  report: _reports![i],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
       ),

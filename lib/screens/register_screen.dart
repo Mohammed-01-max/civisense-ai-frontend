@@ -123,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Join CivicSafe today',
+                        'Join CiviSense AI today',
                         style: TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 16,

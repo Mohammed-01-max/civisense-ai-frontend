@@ -12,9 +12,11 @@ import 'screens/citizen/my_reports.dart';
 import 'screens/admin/admin_home.dart';
 import 'screens/admin/all_reports.dart';
 import 'screens/admin/analytics_screen.dart';
+import 'screens/admin/officer_management.dart';
 import 'screens/authority/authority_home.dart';
 import 'screens/authority/resolve_screen.dart';
 import 'screens/officer/officer_home.dart';
+import 'screens/shared/notification_screen.dart';
 
 void main() {
   runApp(const CivicSafeApp());
@@ -29,7 +31,7 @@ class CivicSafeApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => AuthProvider(apiService),
       child: MaterialApp(
-        title: 'CivicSafe',
+        title: 'CiviSense AI',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         initialRoute: '/',
@@ -43,9 +45,11 @@ class CivicSafeApp extends StatelessWidget {
           '/admin': (ctx) => const AdminHome(),
           '/admin/reports': (ctx) => const AllReportsScreen(),
           '/admin/analytics': (ctx) => const AnalyticsScreen(),
+          '/admin/officers': (ctx) => const OfficerManagementScreen(),
           '/authority': (ctx) => const AuthorityHome(),
           '/authority/resolve': (ctx) => const ResolveScreen(),
           '/officer': (ctx) => const OfficerHome(),
+          '/notifications': (ctx) => const NotificationScreen(),
         },
       ),
     );

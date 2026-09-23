@@ -79,6 +79,8 @@ class _AdminHomeState extends State<AdminHome> {
               _buildAction(context, Icons.list_alt_rounded, 'All Reports', 'View and filter all civic reports', AppTheme.primaryGradient, '/admin/reports'),
               const SizedBox(height: 12),
               _buildAction(context, Icons.bar_chart_rounded, 'Analytics', 'Charts and statistics', AppTheme.accentGradient, '/admin/analytics'),
+              const SizedBox(height: 12),
+              _buildAction(context, Icons.person_add_rounded, 'Officer Management', 'Create and assign field officers', const LinearGradient(colors: [Color(0xFF2D6A4F), Color(0xFF40916C)], begin: Alignment.topLeft, end: Alignment.bottomRight), '/admin/officers'),
             ]),
           ),
         ),

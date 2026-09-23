@@ -29,6 +29,7 @@ class ApiConfig {
   static const String allReports = '/reports/all';
   static const String officerReports = '/officer/reports';
   static const String modelsInfo = '/reports/models';
+  static const String adminOfficers = '/admin/officers';
 
   // Analytics
   static const String analytics = '/analytics/';

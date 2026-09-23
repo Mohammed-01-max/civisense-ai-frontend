@@ -2,9 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../services/notification_service.dart';
 
-class CitizenHome extends StatelessWidget {
+class CitizenHome extends StatefulWidget {
   const CitizenHome({super.key});
+
+  @override
+  State<CitizenHome> createState() => _CitizenHomeState();
+}
+
+class _CitizenHomeState extends State<CitizenHome> {
+  int _unreadCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final apiService = context.read<AuthProvider>().apiService;
+      final service = NotificationService(apiService);
+      final notifs = await service.getMyNotifications();
+      if (mounted) {
+        setState(() {
+          _unreadCount = notifs.where((n) => !n.isRead).length;
+        });
+      }
+    } catch (e) {
+      // Silently ignore notification fetch errors on the home screen
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,26 +44,32 @@ class CitizenHome extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context, user?.fullName ?? 'Citizen', auth),
-                const SizedBox(height: 36),
-                const Text('Quick Actions', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                _buildActionCard(context, Icons.camera_alt_rounded, 'Report an Issue', 'Take a photo to detect civic problems', AppTheme.primaryGradient, '/citizen/submit'),
-                const SizedBox(height: 16),
-                _buildActionCard(context, Icons.list_alt_rounded, 'My Reports', 'View your submitted issue reports', AppTheme.accentGradient, '/citizen/reports'),
-                const SizedBox(height: 36),
-                const Text('How It Works', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                _buildStep(Icons.photo_camera_rounded, 'Capture', 'Take a photo of the civic issue', AppTheme.primary),
-                _buildStep(Icons.auto_awesome_rounded, 'AI Detection', 'Our AI identifies the type of issue', AppTheme.accent),
-                _buildStep(Icons.location_on_rounded, 'Auto Report', 'Report is filed with GPS location', AppTheme.warning),
-                _buildStep(Icons.check_circle_rounded, 'Resolution', 'Authorities resolve the issue', AppTheme.resolved),
-              ],
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await _loadUnreadCount();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, user?.fullName ?? 'Citizen', auth),
+                  const SizedBox(height: 36),
+                  const Text('Quick Actions', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 16),
+                  _buildActionCard(context, Icons.camera_alt_rounded, 'Report an Issue', 'Take a photo to detect civic problems', AppTheme.primaryGradient, '/citizen/submit'),
+                  const SizedBox(height: 16),
+                  _buildActionCard(context, Icons.list_alt_rounded, 'My Reports', 'View your submitted issue reports', AppTheme.accentGradient, '/citizen/reports'),
+                  const SizedBox(height: 36),
+                  const Text('How It Works', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 16),
+                  _buildStep(Icons.photo_camera_rounded, 'Capture', 'Take a photo of the civic issue', AppTheme.primary),
+                  _buildStep(Icons.auto_awesome_rounded, 'AI Detection', 'Our AI identifies the type of issue', AppTheme.accent),
+                  _buildStep(Icons.location_on_rounded, 'Auto Report', 'Report is filed with GPS location', AppTheme.warning),
+                  _buildStep(Icons.check_circle_rounded, 'Resolution', 'Authorities resolve the issue', AppTheme.resolved),
+                ],
+              ),
             ),
           ),
         ),
@@ -53,13 +88,34 @@ class CitizenHome extends StatelessWidget {
             const Text('Report civic issues in your area', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
           ]),
         ),
-        GestureDetector(
-          onTap: () => _showLogoutSheet(context, auth),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: 0.08))),
-            child: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 24),
-          ),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () async {
+                await Navigator.pushNamed(context, '/notifications');
+                _loadUnreadCount(); // Refresh count after returning
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: 0.08))),
+                child: Badge(
+                  isLabelVisible: _unreadCount > 0,
+                  label: Text(_unreadCount.toString()),
+                  backgroundColor: AppTheme.error,
+                  child: const Icon(Icons.notifications_outlined, color: AppTheme.primary, size: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => _showLogoutSheet(context, auth),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white.withValues(alpha: 0.08))),
+                child: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 24),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -140,3 +196,4 @@ class CitizenHome extends StatelessWidget {
     );
   }
 }
+

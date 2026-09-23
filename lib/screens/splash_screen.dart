@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
@@ -99,15 +100,15 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.shield_rounded,
-                      color: Colors.white,
-                      size: 64,
+                    child: SvgPicture.asset(
+                      'assets/images/civisense_logo.svg',
+                      width: 64,
+                      height: 64,
                     ),
                   ),
                   const SizedBox(height: 32),
                   const Text(
-                    'CivicSafe',
+                    'CiviSense AI',
                     style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 36,
@@ -117,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Smart Civic Issue Detection',
+                    'Intelligent Civic Governance',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 16,

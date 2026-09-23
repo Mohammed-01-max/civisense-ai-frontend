@@ -1,11 +1,11 @@
 {
-    "name": "civicsafe",
-    "short_name": "civicsafe",
+    "name": "CiviSense AI",
+    "short_name": "CiviSense",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0D1B2A",
+    "theme_color": "#00B4D8",
+    "description": "CiviSense AI — Intelligent Civic Governance",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
@@ -118,10 +119,10 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.shield_rounded,
-                          color: Colors.white,
-                          size: 48,
+                        child: SvgPicture.asset(
+                          'assets/images/civisense_logo.svg',
+                          width: 48,
+                          height: 48,
                         ),
                       ),
                       const SizedBox(height: 24),
