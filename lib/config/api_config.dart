@@ -4,7 +4,9 @@ class ApiConfig {
   // Set at build time, for example:
   // flutter run --dart-define=API_BASE_URL=https://api.example.invalid
   // Production builds must provide this value; no production host is embedded.
-  static const String _configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+  );
 
   static String get baseUrl {
     if (_configuredBaseUrl.isNotEmpty) {
@@ -17,8 +19,12 @@ class ApiConfig {
 
     // Development-only defaults preserve the current local workflow. Physical
     // devices must receive a reachable host through API_BASE_URL.
-    if (kIsWeb) return 'http://127.0.0.1:8000';
-    if (defaultTargetPlatform == TargetPlatform.android) return 'http://10.0.2.2:8000';
+    if (kIsWeb) {
+      return 'http://127.0.0.1:8000';
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000';
+    }
     return 'http://127.0.0.1:8000';
   }
 
@@ -34,6 +40,7 @@ class ApiConfig {
   static const String officerReports = '/officer/reports';
   static const String modelsInfo = '/reports/models';
   static const String adminOfficers = '/admin/officers';
+  static const String adminUsersCount = '/admin/users/count';
 
   // Analytics
   static const String analytics = '/analytics/';

@@ -59,4 +59,14 @@ class AdminService {
     }
     throw Exception(message);
   }
+
+  /// Returns the total count of registered users from the admin-only endpoint.
+  Future<int> getTotalUsersCount() async {
+    final response = await _api.get(ApiConfig.adminUsersCount);
+    final body = jsonDecode(response.body);
+    if (response.statusCode == 200 && body is Map<String, dynamic>) {
+      return (body['total_users'] as num?)?.toInt() ?? 0;
+    }
+    throw Exception('Failed to load registered user count');
+  }
 }

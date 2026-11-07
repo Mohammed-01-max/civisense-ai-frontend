@@ -70,13 +70,16 @@ class AiAssessmentCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           const Divider(
-              height: 1, color: Color(0x14FFFFFF), indent: 18, endIndent: 18),
+            height: 1,
+            color: Color(0x14FFFFFF),
+            indent: 18,
+            endIndent: 18,
+          ),
           const SizedBox(height: 14),
 
           // ── Detections ──────────────────────────────────────────────────
           if (hasDetections) ...[
-            _SectionLabel(
-                icon: Icons.search_rounded, label: 'Detected Issues'),
+            _SectionLabel(icon: Icons.search_rounded, label: 'Detected Issues'),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -94,7 +97,9 @@ class AiAssessmentCard extends StatelessWidget {
           // ── Classification ───────────────────────────────────────────────
           if (hasClassification) ...[
             _SectionLabel(
-                icon: Icons.category_rounded, label: 'Classification'),
+              icon: Icons.category_rounded,
+              label: 'Classification',
+            ),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -116,7 +121,9 @@ class AiAssessmentCard extends StatelessWidget {
                   label: 'Model',
                   value: report.triageSource,
                   valueStyle: const TextStyle(
-                      color: AppTheme.textMuted, fontSize: 12),
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -125,8 +132,7 @@ class AiAssessmentCard extends StatelessWidget {
 
           // ── Severity ────────────────────────────────────────────────────
           if (hasSeverity) ...[
-            _SectionLabel(
-                icon: Icons.warning_amber_rounded, label: 'Severity'),
+            _SectionLabel(icon: Icons.warning_amber_rounded, label: 'Severity'),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -148,8 +154,7 @@ class AiAssessmentCard extends StatelessWidget {
 
           // ── Priority ────────────────────────────────────────────────────
           if (hasPriority) ...[
-            _SectionLabel(
-                icon: Icons.flag_rounded, label: 'Priority Advisory'),
+            _SectionLabel(icon: Icons.flag_rounded, label: 'Priority Advisory'),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -159,14 +164,14 @@ class AiAssessmentCard extends StatelessWidget {
                   _InfoRow(
                     label: 'Priority',
                     value: _formatLabel(report.priorityAdvisory!.level),
-                    valueColor:
-                        _priorityColor(report.priorityAdvisory!.level),
+                    valueColor: _priorityColor(report.priorityAdvisory!.level),
                   ),
                   const SizedBox(height: 6),
                   _InfoRow(
                     label: 'Reason',
                     value: _formatReasonCode(
-                        report.priorityAdvisory!.reasonCode),
+                      report.priorityAdvisory!.reasonCode,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   _FactorsRow(factors: report.priorityAdvisory!.factors),
@@ -178,8 +183,7 @@ class AiAssessmentCard extends StatelessWidget {
 
           // ── Department ──────────────────────────────────────────────────
           if (hasDepartment) ...[
-            _SectionLabel(
-                icon: Icons.business_rounded, label: 'Routed To'),
+            _SectionLabel(icon: Icons.business_rounded, label: 'Routed To'),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -194,15 +198,15 @@ class AiAssessmentCard extends StatelessWidget {
           // ── Similar Reports ─────────────────────────────────────────────
           if (hasSimilar) ...[
             _SectionLabel(
-                icon: Icons.content_copy_rounded,
-                label: 'Possible Related Reports'),
+              icon: Icons.content_copy_rounded,
+              label: 'Possible Related Reports',
+            ),
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: Text(
                 'These may refer to the same issue. Not confirmed duplicates.',
-                style: const TextStyle(
-                    color: AppTheme.textMuted, fontSize: 11),
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
               ),
             ),
             const SizedBox(height: 8),
@@ -227,8 +231,11 @@ class AiAssessmentCard extends StatelessWidget {
     return raw
         .replaceAll('_', ' ')
         .split(' ')
-        .map((w) =>
-            w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : w)
+        .map(
+          (w) => w.isNotEmpty
+              ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}'
+              : w,
+        )
         .join(' ');
   }
 
@@ -339,7 +346,8 @@ class _InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value!,
-              style: valueStyle ??
+              style:
+                  valueStyle ??
                   TextStyle(
                     color: valueColor ?? AppTheme.textPrimary,
                     fontSize: 13,
@@ -347,10 +355,7 @@ class _InfoRow extends StatelessWidget {
                   ),
             ),
           ),
-        if (trailing != null) ...[
-          const SizedBox(width: 8),
-          trailing!,
-        ],
+        if (trailing != null) ...[const SizedBox(width: 8), trailing!],
       ],
     );
   }
@@ -367,8 +372,8 @@ class _ConfidencePill extends StatelessWidget {
     final color = value >= 0.8
         ? AppTheme.success
         : value >= 0.5
-            ? AppTheme.warning
-            : AppTheme.textMuted;
+        ? AppTheme.warning
+        : AppTheme.textMuted;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -416,15 +421,15 @@ class _FactorsRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
+          _FactorItem(label: 'Severity', value: _fmt(factors.severity)),
           _FactorItem(
-              label: 'Severity',
-              value: _fmt(factors.severity)),
+            label: 'Visual evidence',
+            value: _fmtEvidence(factors.yoloEvidenceState),
+          ),
           _FactorItem(
-              label: 'Visual evidence',
-              value: _fmtEvidence(factors.yoloEvidenceState)),
-          _FactorItem(
-              label: 'Recurrence',
-              value: _fmtBool(factors.possibleRecurrence)),
+            label: 'Recurrence',
+            value: _fmtBool(factors.possibleRecurrence),
+          ),
         ],
       ),
     );
@@ -476,9 +481,7 @@ class _FactorItem extends StatelessWidget {
             width: 100,
             child: Text(
               label,
-              style: const TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
           ),
           Text(
@@ -525,13 +528,11 @@ class _SimilarReportRow extends StatelessWidget {
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: AppTheme.info.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(6),
-              border:
-                  Border.all(color: AppTheme.info.withValues(alpha: 0.25)),
+              border: Border.all(color: AppTheme.info.withValues(alpha: 0.25)),
             ),
             child: Text(
               '$pct% similar',

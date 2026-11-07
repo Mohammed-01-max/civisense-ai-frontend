@@ -208,7 +208,7 @@ class Report {
           ? DateTime.parse(json['resolved_at'])
           : null,
       createdAt: DateTime.parse(json['created_at']),
-      detections: (json['detections'] as List)
+      detections: (json['detections'] as List? ?? [])
           .map((d) => Detection.fromJson(d as Map<String, dynamic>))
           .toList(),
 
