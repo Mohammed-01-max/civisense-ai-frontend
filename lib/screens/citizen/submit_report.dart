@@ -1,7 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
+
 import '../../providers/auth_provider.dart';
 import '../../models/report.dart';
 import '../../services/report_service.dart';
@@ -9,12 +16,13 @@ import '../../services/location_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/gradient_button.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/issue_chip.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/issue_chip.dart';
 import '../../widgets/ai_assessment_card.dart';
 
 class SubmitReportScreen extends StatefulWidget {
   const SubmitReportScreen({super.key});
+
   @override
   State<SubmitReportScreen> createState() => _SubmitReportScreenState();
 }
@@ -23,50 +31,154 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
   final _descController = TextEditingController();
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
+
   Uint8List? _imageBytes;
   String? _imageName;
   bool _isLoading = false;
-  Report? _result;
   String? _error;
+  Report? _result;
+
+  // Map state
+  final MapController _mapController = MapController();
+  double? _locationAccuracy;
+  String? _humanAddress;
+  bool _isGeocoding = false;
+  bool _isMapReady = false;
+  Timer? _debounceTimer;
+  bool _updatingFromMap = false;
+  double _currentZoom = 15.0;
+
+  LatLng _mapCenter = const LatLng(LocationService.defaultLat, LocationService.defaultLon);
+
+  @override
+  void initState() {
+    super.initState();
+    _latController.addListener(_onManualCoordinateChange);
+    _lonController.addListener(_onManualCoordinateChange);
+  }
 
   @override
   void dispose() {
     _descController.dispose();
+    _latController.removeListener(_onManualCoordinateChange);
+    _lonController.removeListener(_onManualCoordinateChange);
     _latController.dispose();
     _lonController.dispose();
+    _mapController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onManualCoordinateChange() {
+    if (_updatingFromMap) return;
+    final lat = double.tryParse(_latController.text);
+    final lon = double.tryParse(_lonController.text);
+    if (lat != null && lon != null && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      setState(() {
+        _locationAccuracy = null; // Clear accuracy on manual edit
+        _mapCenter = LatLng(lat, lon);
+      });
+      if (_isMapReady) {
+        _mapController.move(_mapCenter, _currentZoom);
+      }
+      _triggerGeocoding(lat, lon);
+    }
+  }
+
+  void _onMapPositionChanged(MapCamera camera, bool hasGesture) {
+    if (hasGesture) {
+      _updatingFromMap = true;
+      final lat = camera.center.latitude;
+      final lon = camera.center.longitude;
+      _currentZoom = camera.zoom;
+
+      _latController.text = lat.toStringAsFixed(6);
+      _lonController.text = lon.toStringAsFixed(6);
+
+      setState(() {
+        _locationAccuracy = null; // Clear GPS accuracy when user manually adjusts map
+      });
+      _triggerGeocoding(lat, lon);
+      _updatingFromMap = false;
+    }
+  }
+
+  double? _lastGeocodedLat;
+  double? _lastGeocodedLon;
+
+  void _triggerGeocoding(double lat, double lon) {
+    if (_lastGeocodedLat == lat && _lastGeocodedLon == lon) return;
+
+    _debounceTimer?.cancel();
+    setState(() {
+      _isGeocoding = true;
+      _humanAddress = null;
+    });
+    _debounceTimer = Timer(const Duration(milliseconds: 1500), () async {
+      final address = await _reverseGeocode(lat, lon);
+      if (!mounted) return;
+      setState(() {
+        _lastGeocodedLat = lat;
+        _lastGeocodedLon = lon;
+        _humanAddress = address;
+        _isGeocoding = false;
+      });
+    });
+  }
+
+  Future<String?> _reverseGeocode(double lat, double lon) async {
+    try {
+      final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon');
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['display_name'] as String?;
+      }
+    } catch (_) {}
+    return null;
   }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(source: source, maxWidth: 1920, imageQuality: 85);
+      final picked = await picker.pickImage(source: source, imageQuality: 80);
       if (picked != null) {
         final bytes = await picked.readAsBytes();
-        if (!mounted) return;
         setState(() {
           _imageBytes = bytes;
           _imageName = picked.name;
-          _result = null;
           _error = null;
         });
       }
     } catch (e) {
-      setState(() => _error = 'Failed to pick image: $e');
+      setState(() => _error = 'Failed to pick image');
     }
   }
 
   Future<void> _getLocation() async {
+    setState(() {
+      _error = null;
+    });
     try {
       final position = await LocationService.getCurrentLocation();
       if (!mounted) return;
       if (position != null) {
+        _updatingFromMap = true;
+        _latController.text = position.latitude.toStringAsFixed(6);
+        _lonController.text = position.longitude.toStringAsFixed(6);
+        _updatingFromMap = false;
+
         setState(() {
-          _latController.text = position.latitude.toStringAsFixed(6);
-          _lonController.text = position.longitude.toStringAsFixed(6);
-          _result = null;
-          _error = null;
+          // Actual position accuracy from device
+          _locationAccuracy = position.accuracy;
+          _mapCenter = LatLng(position.latitude, position.longitude);
         });
+
+        if (_isMapReady) {
+          _mapController.move(_mapCenter, 16.0);
+        }
+        _triggerGeocoding(position.latitude, position.longitude);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Location updated from device GPS'),
@@ -77,6 +189,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
         setState(() => _error = 'Location services unavailable or permission denied');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Failed to get location: $e');
     }
   }
@@ -92,7 +205,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
     }
     final lat = double.tryParse(_latController.text);
     final lon = double.tryParse(_lonController.text);
-    if (lat == null || lon == null) {
+    if (lat == null || lon == null || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       setState(() => _error = 'Invalid coordinates');
       return;
     }
@@ -130,11 +243,56 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
     );
   }
 
+  Widget _buildMap() {
+    return Container(
+      height: 250,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          children: [
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _mapCenter,
+                initialZoom: _currentZoom,
+                onMapReady: () {
+                  _isMapReady = true;
+                },
+                onPositionChanged: _onMapPositionChanged,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.civisense.app',
+                ),
+                const RichAttributionWidget(
+                  attributions: [
+                    TextSourceAttribution('OpenStreetMap contributors'),
+                  ],
+                ),
+              ],
+            ),
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 40.0),
+                child: Icon(Icons.location_pin, color: AppTheme.error, size: 40),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Image picker
         GestureDetector(
           onTap: () => _showImageSourceDialog(),
           child: Container(
@@ -158,9 +316,46 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
         ),
         const SizedBox(height: 24),
 
-        // GPS
-        const Text('GPS Coordinates', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+        const Text('Location Details', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
+
+        _buildMap(),
+        const SizedBox(height: 12),
+
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.place_rounded, color: AppTheme.accent, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _isGeocoding
+                  ? const Text('Loading address...', style: TextStyle(color: AppTheme.textMuted))
+                  : Text(
+                      _humanAddress ?? 'Address unavailable',
+                      style: TextStyle(color: _humanAddress != null ? AppTheme.textPrimary : AppTheme.textMuted, fontSize: 14),
+                    ),
+              ),
+            ],
+          ),
+        ),
+        if (_locationAccuracy != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+            child: Text(
+              'Accuracy: ±${_locationAccuracy!.toStringAsFixed(0)} m',
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            ),
+          ),
+        const SizedBox(height: 16),
+
         Row(children: [
           Expanded(child: CustomTextField(controller: _latController, label: 'Latitude', prefixIcon: Icons.north_rounded, keyboardType: TextInputType.number)),
           const SizedBox(width: 12),
@@ -178,7 +373,6 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Description
         CustomTextField(controller: _descController, label: 'Description (Optional)', hint: 'Describe the issue...', prefixIcon: Icons.description_outlined, maxLines: 3),
         const SizedBox(height: 24),
 
