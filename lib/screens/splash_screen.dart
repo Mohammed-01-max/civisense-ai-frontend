@@ -62,8 +62,13 @@ class _SplashScreenState extends State<SplashScreen>
       case 'officer':
         Navigator.pushReplacementNamed(context, '/officer');
         break;
-      default:
+      case 'citizen':
         Navigator.pushReplacementNamed(context, '/citizen');
+        break;
+      default:
+        final auth = context.read<AuthProvider>();
+        auth.logout();
+        Navigator.pushReplacementNamed(context, '/login');
     }
   }
 

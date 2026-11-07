@@ -43,6 +43,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
       final picked = await picker.pickImage(source: source, maxWidth: 1920, imageQuality: 85);
       if (picked != null) {
         final bytes = await picked.readAsBytes();
+        if (!mounted) return;
         setState(() {
           _imageBytes = bytes;
           _imageName = picked.name;
@@ -58,6 +59,7 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
   Future<void> _getLocation() async {
     try {
       final position = await LocationService.getCurrentLocation();
+      if (!mounted) return;
       if (position != null) {
         setState(() {
           _latController.text = position.latitude.toStringAsFixed(6);
@@ -106,8 +108,10 @@ class _SubmitReportScreenState extends State<SubmitReportScreen> {
         longitude: lon,
         description: _descController.text.trim(),
       );
+      if (!mounted) return;
       setState(() { _result = report; _isLoading = false; });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _error = e.toString().replaceFirst('Exception: ', ''); _isLoading = false; });
     }
   }

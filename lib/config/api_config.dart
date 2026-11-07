@@ -11,6 +11,10 @@ class ApiConfig {
       return _configuredBaseUrl.replaceFirst(RegExp(r'/+$'), '');
     }
 
+    if (kReleaseMode) {
+      throw Exception('API_BASE_URL must be provided in release mode');
+    }
+
     // Development-only defaults preserve the current local workflow. Physical
     // devices must receive a reachable host through API_BASE_URL.
     if (kIsWeb) return 'http://127.0.0.1:8000';

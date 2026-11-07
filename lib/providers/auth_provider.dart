@@ -13,6 +13,9 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider(this._apiService) {
     _authService = AuthService(_apiService);
+    _apiService.onUnauthorized = () {
+      logout(expired: true);
+    };
   }
 
   User? get user => _user;
@@ -97,10 +100,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool expired = false}) async {
     await _authService.clearToken();
     _user = null;
-    _error = null;
+    if (expired) {
+      _error = 'Your session has expired. Please sign in again.';
+    } else {
+      _error = null;
+    }
     notifyListeners();
   }
 

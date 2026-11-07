@@ -18,6 +18,8 @@ import 'screens/authority/resolve_screen.dart';
 import 'screens/officer/officer_home.dart';
 import 'screens/shared/notification_screen.dart';
 
+import 'widgets/role_guard.dart';
+
 void main() {
   runApp(const CivicSafeApp());
 }
@@ -39,17 +41,17 @@ class CivicSafeApp extends StatelessWidget {
           '/': (ctx) => const SplashScreen(),
           '/login': (ctx) => const LoginScreen(),
           '/register': (ctx) => const RegisterScreen(),
-          '/citizen': (ctx) => const CitizenHome(),
-          '/citizen/submit': (ctx) => const SubmitReportScreen(),
-          '/citizen/reports': (ctx) => const MyReportsScreen(),
-          '/admin': (ctx) => const AdminHome(),
-          '/admin/reports': (ctx) => const AllReportsScreen(),
-          '/admin/analytics': (ctx) => const AnalyticsScreen(),
-          '/admin/officers': (ctx) => const OfficerManagementScreen(),
-          '/authority': (ctx) => const AuthorityHome(),
-          '/authority/resolve': (ctx) => const ResolveScreen(),
-          '/officer': (ctx) => const OfficerHome(),
-          '/notifications': (ctx) => const NotificationScreen(),
+          '/citizen': (ctx) => RoleGuard(allowedRoles: ['citizen'], child: CitizenHome()),
+          '/citizen/submit': (ctx) => RoleGuard(allowedRoles: ['citizen'], child: SubmitReportScreen()),
+          '/citizen/reports': (ctx) => RoleGuard(allowedRoles: ['citizen'], child: MyReportsScreen()),
+          '/admin': (ctx) => RoleGuard(allowedRoles: ['admin'], child: AdminHome()),
+          '/admin/reports': (ctx) => RoleGuard(allowedRoles: ['admin'], child: AllReportsScreen()),
+          '/admin/analytics': (ctx) => RoleGuard(allowedRoles: ['admin'], child: AnalyticsScreen()),
+          '/admin/officers': (ctx) => RoleGuard(allowedRoles: ['admin'], child: OfficerManagementScreen()),
+          '/authority': (ctx) => RoleGuard(allowedRoles: ['authority'], child: AuthorityHome()),
+          '/authority/resolve': (ctx) => RoleGuard(allowedRoles: ['authority'], child: ResolveScreen()),
+          '/officer': (ctx) => RoleGuard(allowedRoles: ['officer'], child: OfficerHome()),
+          '/notifications': (ctx) => RoleGuard(allowedRoles: ['citizen', 'admin', 'authority', 'officer'], child: NotificationScreen()),
         },
       ),
     );

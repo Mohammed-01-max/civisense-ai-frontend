@@ -39,6 +39,19 @@ class _LoginScreenState extends State<LoginScreen>
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
     _animController.forward();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(auth.error!),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+        auth.clearError();
+      }
+    });
   }
 
   @override
@@ -84,8 +97,18 @@ class _LoginScreenState extends State<LoginScreen>
       case 'officer':
         Navigator.pushReplacementNamed(context, '/officer');
         break;
-      default:
+      case 'citizen':
         Navigator.pushReplacementNamed(context, '/citizen');
+        break;
+      default:
+        final auth = context.read<AuthProvider>();
+        auth.logout();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unsupported role. Access denied.'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
     }
   }
 
